@@ -87,10 +87,7 @@ public class FrameworkMethod extends FrameworkMember<FrameworkMethod> {
             String state = isStatic ? "should" : "should not";
             errors.add(new Exception("Method " + fMethod.getName() + "() " + state + " be static"));
         }
-        if (!Modifier.isPublic(fMethod.getDeclaringClass().getModifiers())) {
-            errors.add(new Exception("Class " + fMethod.getDeclaringClass().getName() + " should be public"));
-        }
-        if (!Modifier.isPublic(fMethod.getModifiers())) {
+        if (!isPublic()) {
             errors.add(new Exception("Method " + fMethod.getName() + "() should be public"));
         }
         if (fMethod.getReturnType() != Void.TYPE) {
