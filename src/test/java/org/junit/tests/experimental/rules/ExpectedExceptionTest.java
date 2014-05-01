@@ -72,6 +72,9 @@ public class ExpectedExceptionTest {
                         hasSingleAssumptionFailure()},
                 {ThrowExpectedAssertionError.class, everyTestRunSuccessful()},
                 {
+                        DontThrowAssertionErrorButExpectOne.class,
+                        hasSingleFailureWithMessage("Expected test to throw an instance of java.lang.AssertionError")},
+                {
                         ThrowUnexpectedAssertionError.class,
                         hasSingleFailureWithMessage(startsWith("\nExpected: an instance of java.lang.NullPointerException"))},
                 {FailAndDontHandleAssertinErrors.class,
@@ -88,7 +91,8 @@ public class ExpectedExceptionTest {
                                 containsString("exception with cause is <java.lang.NullPointerException: expected cause>"),
                                 containsString("cause was <java.lang.NullPointerException: an unexpected cause>"),
                                 containsString("Stacktrace was: java.lang.IllegalArgumentException: Ack!"),
-                                containsString("Caused by: java.lang.NullPointerException: an unexpected cause")))}
+                                containsString("Caused by: java.lang.NullPointerException: an unexpected cause")))},
+                { CustomMessageWithoutExpectedException.class, hasSingleFailureWithMessage(ARBITRARY_MESSAGE) }
         });
     }
 
@@ -288,6 +292,17 @@ public class ExpectedExceptionTest {
         }
     }
 
+    public static class DontThrowAssertionErrorButExpectOne {
+        @Rule
+        public ExpectedException thrown = none();
+
+        @Test
+        public void assertionErrorExpectedButNonIsThrown() {
+            thrown.handleAssertionErrors();
+            thrown.expect(AssertionError.class);
+        }
+    }
+
     public static class ViolateAssumptionAndExpectException {
         @Rule
         public ExpectedException thrown = none();
@@ -366,6 +381,18 @@ public class ExpectedExceptionTest {
             thrown.expectCause(is(new NullPointerException("expected cause")));
 
             throw new IllegalArgumentException("Ack!", new NullPointerException("an unexpected cause"));
+        }
+    }
+    
+    public static class CustomMessageWithoutExpectedException {
+
+        @Rule
+        public ExpectedException thrown = ExpectedException.none();
+
+        @Test
+        public void noThrow() {
+            thrown.expect(IllegalArgumentException.class);
+            thrown.reportMissingExceptionWithMessage(ARBITRARY_MESSAGE);
         }
     }
 }

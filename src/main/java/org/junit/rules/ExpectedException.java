@@ -96,6 +96,8 @@ public class ExpectedException implements TestRule {
     private boolean handleAssumptionViolatedExceptions = false;
 
     private boolean handleAssertionErrors = false;
+    
+    private String missingExceptionMessage;
 
     private ExpectedException() {
     }
@@ -107,6 +109,17 @@ public class ExpectedException implements TestRule {
 
     public ExpectedException handleAssumptionViolatedExceptions() {
         handleAssumptionViolatedExceptions = true;
+        return this;
+    }
+    
+    /**
+     * Specifies the failure message for tests that are expected to throw 
+     * an exception but do not throw any.
+     * @param message exception detail message
+     * @return self
+     */
+    public ExpectedException reportMissingExceptionWithMessage(String message) {
+        missingExceptionMessage = message;
         return this;
     }
 
@@ -166,22 +179,20 @@ public class ExpectedException implements TestRule {
         public void evaluate() throws Throwable {
             try {
                 fNext.evaluate();
-                if (fMatcherBuilder.expectsThrowable()) {
-                    failDueToMissingException();
-                }
             } catch (AssumptionViolatedException e) {
                 optionallyHandleException(e, handleAssumptionViolatedExceptions);
+                return;
             } catch (AssertionError e) {
                 optionallyHandleException(e, handleAssertionErrors);
+                return;
             } catch (Throwable e) {
                 handleException(e);
+                return;
+            }
+            if (fMatcherBuilder.expectsThrowable()) {
+                failDueToMissingException();
             }
         }
-    }
-
-    private void failDueToMissingException() throws AssertionError {
-        String expectation = StringDescription.toString(fMatcherBuilder.build());
-        fail("Expected test to throw " + expectation);
     }
 
     private void optionallyHandleException(Throwable e, boolean handleException)
@@ -199,5 +210,22 @@ public class ExpectedException implements TestRule {
         } else {
             throw e;
         }
+    }
+
+    private void failDueToMissingException() throws AssertionError {
+        fail(missingExceptionMessage());
+    }
+    
+    private String missingExceptionMessage() {
+        if (isMissingExceptionMessageEmpty()) {
+            String expectation = StringDescription.toString(fMatcherBuilder.build());
+            return "Expected test to throw " + expectation;
+        } else {
+            return missingExceptionMessage;
+        }        
+    }
+    
+    private boolean isMissingExceptionMessageEmpty() {
+        return missingExceptionMessage == null || missingExceptionMessage.length() == 0;
     }
 }
