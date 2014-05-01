@@ -278,6 +278,7 @@
                             <dependencySourceIncludes>
                                 <dependencySourceInclude>org.hamcrest:hamcrest-core:*</dependencySourceInclude>
                             </dependencySourceIncludes>
+                            <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                     </execution>
                 </executions>
